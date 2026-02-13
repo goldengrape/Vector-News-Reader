@@ -1,18 +1,20 @@
 # Vector | Precision News Radar
 
-**Vector** (formerly NeuralFilter) is an intelligent, AI-driven tech news aggregator that learns your cognitive preferences to filter out noise and deliver high-signal information.
+[简体中文](./README_zh.md) | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [English](./README.md)
+
+**Vector** is an intelligent, AI-driven tech news aggregator that learns your cognitive preferences to filter out noise and deliver high-signal information.
 
 Unlike traditional RSS readers or algorithmic feeds that optimize for engagement, Vector optimizes for **information density and relevance** based on a transparent "Natural Language Filter" that you co-create with the AI.
 
 ## 🚀 Key Features
 
 *   **Global Tech Surveillance**: Aggregates news from top-tier sources (TechCrunch, Wired, Nature, IEEE Spectrum, etc.).
-*   **AI Translation & Summarization**: Automatically translates titles and generates one-sentence summaries in Chinese for rapid scanning.
+*   **Multi-Language Support**: Automatically translates titles and summaries into your preferred language (**English, Chinese, Japanese, or Korean**) for rapid scanning.
 *   **Preference Lab (Calibration)**:
     *   Swipe-style voting (Like/Dislike) on raw news feeds.
     *   Generates a deep **Psychological Persona** analyzing your information metabolic rate.
     *   Constructs a **Natural Language Filter (System Prompt)** that explicitly defines what constitutes "Signal" vs. "Noise" for you.
-*   **Smart Reader**: Applies your custom filter to incoming news, explaining *why* specific items were selected.
+*   **Smart Reader**: Applies your custom filter to incoming news, explaining *why* specific items were selected in your chosen language.
 *   **Privacy First**: All preferences and API keys are stored in your browser's **LocalStorage**. No external database.
 *   **BYOK (Bring Your Own Key)**: Supports custom Google Gemini API Keys to avoid rate limits.
 
@@ -47,12 +49,13 @@ To ensure stable usage, especially for high-volume filtering:
 
 1.  Click the **Settings (Gear Icon)** in the top navigation bar.
 2.  Enter your **Google Gemini API Key**. You can get one at [Google AI Studio](https://aistudio.google.com/app/apikey).
-3.  Select your preferred model (Gemini 3.0 Flash is recommended for speed/cost balance).
+3.  Select your **Output Language** (Default is Chinese, switchable to English, Japanese, or Korean).
+4.  Select your preferred model (Gemini 3.0 Flash is recommended for speed/cost balance).
 
 ## 📖 How to Use
 
 1.  **Lab Mode (Default on first load)**:
-    *   Read the raw news feed.
+    *   Read the raw news feed (automatically translated to your target language).
     *   Mark at least 10 items as "Interested" or "Not Interested".
     *   Click **"Generate Filter"**.
     *   Review your generated Persona and Filter Logic. Click **"Enable & Read"**.

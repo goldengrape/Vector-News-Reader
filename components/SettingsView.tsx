@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Key, Cpu, AlertTriangle, Check, ShieldCheck } from 'lucide-react';
-import { Settings, AVAILABLE_MODELS } from '../types';
+import { Save, Key, Cpu, AlertTriangle, Check, ShieldCheck, Globe } from 'lucide-react';
+import { Settings, AVAILABLE_MODELS, SUPPORTED_LANGUAGES, Language } from '../types';
 import { getSettings, saveSettings } from '../services/settings';
 
 interface SettingsViewProps {
@@ -16,7 +16,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
     setSettings(getSettings());
   }, []);
 
-  const handleChange = (field: keyof Settings, value: string) => {
+  const handleChange = (field: keyof Settings, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }));
     setIsSaved(false);
   };
@@ -37,12 +37,55 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
             <Cpu className="w-8 h-8 text-brand-400" />
-            <span>AI 引擎配置</span>
+            <span>AI 引擎配置 (Engine Configuration)</span>
         </h2>
-        <p className="text-gray-400">配置您的专属 AI 接口密钥与模型偏好。数据仅存储在本地。</p>
+        <p className="text-gray-400">配置您的专属 AI 接口密钥、模型偏好及输出语言。</p>
       </div>
 
       <div className="space-y-6">
+        {/* Language Selection */}
+        <div className="bg-dark-800/50 border border-white/10 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                <Globe className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+                <h3 className="text-lg font-medium text-white mb-2">输出语言 (Output Language)</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                    新闻标题、摘要以及 AI 生成的分析报告将翻译为您选择的语言。
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                        <label 
+                            key={lang.code}
+                            className={`
+                                flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all
+                                ${settings.language === lang.code 
+                                    ? 'bg-brand-500/10 border-brand-500/50' 
+                                    : 'bg-black/20 border-white/5 hover:bg-white/5'}
+                            `}
+                        >
+                            <div className="flex items-center gap-3">
+                                <input 
+                                    type="radio" 
+                                    name="language"
+                                    value={lang.code}
+                                    checked={settings.language === lang.code}
+                                    onChange={() => handleChange('language', lang.code as Language)}
+                                    className="text-brand-500 focus:ring-brand-500 bg-transparent border-gray-600"
+                                />
+                                <span className={`text-sm font-medium ${settings.language === lang.code ? 'text-white' : 'text-gray-400'}`}>
+                                    {lang.name}
+                                </span>
+                            </div>
+                            {settings.language === lang.code && <Check className="w-4 h-4 text-brand-400" />}
+                        </label>
+                    ))}
+                </div>
+            </div>
+          </div>
+        </div>
+
         {/* API Key Section */}
         <div className="bg-dark-800/50 border border-white/10 rounded-2xl p-6">
           <div className="flex items-start gap-4">
@@ -81,7 +124,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
                 <Cpu className="w-6 h-6" />
             </div>
             <div className="flex-1">
-                <h3 className="text-lg font-medium text-white mb-2">推理模型选择</h3>
+                <h3 className="text-lg font-medium text-white mb-2">推理模型选择 (Model)</h3>
                 <p className="text-sm text-gray-500 mb-4">
                     不同的模型在速度和推理深度上有所不同。推荐使用 Gemini 3.0 系列。
                 </p>
@@ -123,7 +166,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
                 onClick={onBack}
                 className="px-6 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
             >
-                返回
+                返回 (Back)
             </button>
             <button 
                 onClick={handleSave}
@@ -135,7 +178,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
                 `}
             >
                 {isSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                {isSaved ? '已保存配置' : '保存更改'}
+                {isSaved ? '已保存 (Saved)' : '保存更改 (Save)'}
             </button>
         </div>
 

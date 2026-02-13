@@ -1,7 +1,7 @@
 # User Requirements Document (URD)
 
 **Project Name**: Vector (Precision News Radar)  
-**Version**: 1.0  
+**Version**: 1.1  
 **Status**: Active
 
 ## 1. Introduction
@@ -13,33 +13,35 @@ The purpose of Vector is to solve the "information overload" problem for tech pr
 *   **Engineers & Developers**: Looking for specific architectural breakthroughs, not general "tech news".
 *   **Researchers**: Tracking specific scientific domains (e.g., LLM interpretability, Material Science).
 *   **Investors**: Filtering for specific market signals while ignoring PR fluff.
+*   **Global Users**: Users who prefer reading summaries in English, Chinese, Japanese, or Korean.
 
 ## 2. Functional Requirements
 
 ### 2.1 News Aggregation & Processing
 *   **FR-01**: The system MUST fetch RSS feeds from a curated list of high-quality tech sources (e.g., The Verge, Ars Technica, IEEE Spectrum).
 *   **FR-02**: The system MUST handle CORS issues using proxy services (AllOrigins, CORSProxy).
-*   **FR-03**: The system MUST use AI to translate English titles to Simplified Chinese.
-*   **FR-04**: The system MUST generate a one-sentence Chinese summary for each news item.
+*   **FR-03**: The system MUST use AI to translate English titles into the **User Selected Language** (English, Simplified Chinese, Japanese, or Korean).
+*   **FR-04**: The system MUST generate a one-sentence summary for each news item in the **User Selected Language**.
 
 ### 2.2 Preference Calibration (The "Lab")
 *   **FR-05**: Users MUST be able to vote "Like" (Interested) or "Dislike" (Not Interested) on news items.
 *   **FR-06**: The system REQUIRE a minimum of 10 votes to ensure statistical significance before generation.
 *   **FR-07**: The system MUST analyze voting history to generate:
-    *   **User Persona**: A psychological analysis of the user's information consumption habits.
-    *   **Natural Language Filter**: An executable System Prompt containing Pass/Block gates.
-    *   **Tags**: 3-5 keywords describing the user's niche.
+    *   **User Persona**: A psychological analysis of the user's information consumption habits (in User Selected Language).
+    *   **Natural Language Filter**: An executable System Prompt containing Pass/Block gates (in User Selected Language or English, optimized for the AI).
+    *   **Tags**: 3-5 keywords describing the user's niche (in User Selected Language).
 
 ### 2.3 Intelligent Filtering (The "Reader")
 *   **FR-08**: The system MUST use the generated Natural Language Filter to process new batches of news.
 *   **FR-09**: The system MUST hide items that do not pass the filter criteria.
-*   **FR-10**: For passed items, the system MUST display a "Pass Reason" explaining which rule was triggered.
+*   **FR-10**: For passed items, the system MUST display a "Pass Reason" explaining which rule was triggered (in User Selected Language).
 *   **FR-11**: Users MUST be able to manually edit the generated System Prompt.
 
 ### 2.4 Configuration & Persistence
 *   **FR-12**: All user data (votes, generated filters, settings) MUST be stored in `LocalStorage`.
 *   **FR-13**: Users MUST be able to input their own Google Gemini API Key.
 *   **FR-14**: Users MUST be able to select between different AI models (Gemini 3.0 Flash, Gemini 3.0 Pro).
+*   **FR-15**: Users MUST be able to select their preferred output language (`zh`, `en`, `ja`, `ko`).
 
 ## 3. Non-Functional Requirements
 

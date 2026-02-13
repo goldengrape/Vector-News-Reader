@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { NewsItem, VoteRecord, AnalysisResult, FilteredNewsItem } from "../types";
+import { NewsItem, VoteRecord, AnalysisResult, FilteredNewsItem, SUPPORTED_LANGUAGES } from "../types";
 import { getSettings } from "./settings";
 
 // Helper to initialize client based on current settings
@@ -8,6 +8,9 @@ const getAIContext = () => {
   // Prioritize user-provided key, fallback to env var
   const apiKey = settings.apiKey || process.env.API_KEY;
   const modelId = settings.modelId || "gemini-3-flash-preview";
+  const languageCode = settings.language || "zh";
+
+  const languagePromptName = SUPPORTED_LANGUAGES.find(l => l.code === languageCode)?.promptName || 'Simplified Chinese';
 
   if (!apiKey) {
     throw new Error("API_KEY_MISSING");
@@ -15,7 +18,8 @@ const getAIContext = () => {
 
   return {
     ai: new GoogleGenAI({ apiKey }),
-    modelId
+    modelId,
+    languagePromptName
   };
 };
 
@@ -194,7 +198,7 @@ export const fetchNewsBatch = async (batchSize: number = 10, page: number = 0): 
 
   // 4. Gemini Processing
   try {
-    const { ai, modelId } = getAIContext();
+    const { ai, modelId, languagePromptName } = getAIContext();
 
     // Only send the necessary fields to save tokens
     const minimizedInput = shuffledRaw.map(item => ({
@@ -205,14 +209,14 @@ export const fetchNewsBatch = async (batchSize: number = 10, page: number = 0): 
     }));
 
     const prompt = `
-      You are a tech news editor. Translate and summarize these RSS items into Simplified Chinese.
+      You are a tech news editor. Translate and summarize these RSS items into ${languagePromptName}.
       
       Input Format: JSON Array of {s: source, t: title, d: description, l: link}
       
       Requirements:
-      1. title: Translate to Chinese.
-      2. summary: Summarize "d" into strictly ONE Chinese sentence.
-      3. category: Assign (e.g., AI, Consumer Tech, Science, Business, Dev, Security).
+      1. title: Translate to ${languagePromptName}.
+      2. summary: Summarize "d" into strictly ONE sentence in ${languagePromptName}.
+      3. category: Assign a general tech category in ${languagePromptName} (e.g., AI, Consumer Tech, Science, Business, Dev, Security).
       4. Return JSON Array.
 
       Input:
@@ -261,11 +265,15 @@ export const fetchNewsBatch = async (batchSize: number = 10, page: number = 0): 
 };
 
 export const analyzeUserPreferences = async (votes: VoteRecord[]): Promise<AnalysisResult> => {
+  const { ai, modelId, languagePromptName } = getAIContext();
+
   const likes = votes.filter(v => v.vote === 'like').map(v => `[${v.item.category}] ${v.item.title}`);
   const dislikes = votes.filter(v => v.vote === 'dislike').map(v => `[${v.item.category}] ${v.item.title}`);
 
   const prompt = `
     你现在是该用户的“首席情报官”与“认知架构师”。任务是根据用户的投票历史，生成一份极高精度的心理画像和一份可执行的自然语言过滤器。
+    
+    IMPORTANT: Output all the content (persona, explanation, tags) in **${languagePromptName}**.
 
     用户投票数据:
     【喜欢的 (Likes)】:
@@ -295,7 +303,7 @@ export const analyzeUserPreferences = async (votes: VoteRecord[]): Promise<Analy
     请生成 JSON 对象，包含以下字段：
 
     1. **"persona" (用户深度心理画像)**:
-       请用中文撰写（300字左右）。不要堆砌形容词，要分析其**信息代谢机制**：
+       请用 **${languagePromptName}** 撰写（300字左右）。不要堆砌形容词，要分析其**信息代谢机制**：
        - **认知带宽**: 用户倾向于消耗高密度的理论知识，还是快节奏的市场动态？
        - **价值锚点**: 用户对技术的评判标准是“商业落地”、“工程优美”还是“理论颠覆”？
        - **厌恶本质**: 深度分析用户点“踩”的深层原因（是厌恶软文？厌恶浅薄？还是厌恶特定意识形态？）。
@@ -303,6 +311,7 @@ export const analyzeUserPreferences = async (votes: VoteRecord[]): Promise<Analy
 
     2. **"naturalLanguageFilter" (自然语言过滤器)**:
        这是一个**写给 AI Agent 看的 System Prompt**。请用第二人称“你”来指令 AI。
+       可以使用 ${languagePromptName} 或英文撰写，以逻辑清晰为主。
        必须包含以下结构化模块，行文必须像代码逻辑一样严谨：
        - **[ROLE DEFINITION]**: 定义 AI 的具体角色（如：无情的硬核技术筛选器）。
        - **[PASS_GATES] (放行标准)**: 具体的技术指标、新闻深度要求。
@@ -310,11 +319,10 @@ export const analyzeUserPreferences = async (votes: VoteRecord[]): Promise<Analy
        - **[RESOLUTION_LOGIC] (冲突仲裁)**: "IF... THEN..." 逻辑。例如：“如果新闻是关于马斯克的（通常拦截），但包含 Starship 的具体遥测数据（放行），则提取数据部分并放行。”
        - **[SUMMARIZATION_STYLE] (摘要风格)**: 指定输出的语气（如：学术、冷峻、反直觉）。
 
-    3. **"tags"**: 3-5 个极其精准的中文标签（如：#硬核工程 #反叙事 #底层架构）。
+    3. **"tags"**: 3-5 个极其精准的标签（用 **${languagePromptName}**）。
   `;
 
   try {
-    const { ai, modelId } = getAIContext();
     const response = await ai.models.generateContent({
       model: modelId,
       contents: prompt,
@@ -346,6 +354,8 @@ export const analyzeUserPreferences = async (votes: VoteRecord[]): Promise<Analy
 };
 
 export const applyNaturalLanguageFilter = async (newsItems: NewsItem[], filterPrompt: string): Promise<FilteredNewsItem[]> => {
+  const { ai, modelId, languagePromptName } = getAIContext();
+
   const newsInput = newsItems.map(n => ({
     id: n.id,
     title: n.title,
@@ -363,13 +373,13 @@ export const applyNaturalLanguageFilter = async (newsItems: NewsItem[], filterPr
     For each passed item, provide:
     1. "id": The original id.
     2. "passReason": A very short explanation (6-10 words) of why it passed, referencing the specific PASS_GATE it hit.
+       **IMPORTANT**: Write the "passReason" in **${languagePromptName}**.
     
     [NEWS ITEMS]
     ${JSON.stringify(newsInput)}
   `;
 
   try {
-    const { ai, modelId } = getAIContext();
     const response = await ai.models.generateContent({
       model: modelId,
       contents: prompt,

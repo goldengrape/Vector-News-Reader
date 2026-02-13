@@ -36,9 +36,12 @@ export enum AppState {
 
 export type AppView = 'reader' | 'generator' | 'settings';
 
+export type Language = 'zh' | 'en' | 'ja' | 'ko';
+
 export interface Settings {
   apiKey: string;
   modelId: string;
+  language: Language;
 }
 
 export const AVAILABLE_MODELS = [
@@ -47,9 +50,17 @@ export const AVAILABLE_MODELS = [
   { id: "gemini-2.5-flash-latest", name: "Gemini 2.5 Flash (Stable)" }
 ];
 
+export const SUPPORTED_LANGUAGES: { code: Language; name: string; promptName: string }[] = [
+  { code: 'zh', name: '简体中文 (Chinese)', promptName: 'Simplified Chinese' },
+  { code: 'en', name: 'English', promptName: 'English' },
+  { code: 'ja', name: '日本語 (Japanese)', promptName: 'Japanese' },
+  { code: 'ko', name: '한국어 (Korean)', promptName: 'Korean' }
+];
+
 export const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
-  modelId: "gemini-3-flash-preview"
+  modelId: "gemini-3-flash-preview",
+  language: "zh"
 };
 
 export const SOURCES = [

@@ -15,13 +15,14 @@ Before AI processing, the system performs "Federated Fetching":
 
 ## 2. Stage I: Standardization (The Translator)
 
-**Goal**: Convert diverse English inputs into uniform Chinese summaries for the UI.
+**Goal**: Convert diverse English inputs into uniform summaries in the user's preferred language.
 
 *   **Model**: Gemini 3.0 Flash (Optimized for speed/cost).
 *   **Input**: Batch of 10-15 raw RSS items (Source, Title, Description, Link).
+*   **Configuration**: The system checks `Settings.language` to determine the target language (`TargetLang`).
 *   **Prompt Logic**:
     *   Role: "Tech News Editor".
-    *   Task: Translate Title to Chinese; Summarize Description to **one** Chinese sentence; Assign a generic Category.
+    *   Task: Translate Title to `TargetLang`; Summarize Description to **one** sentence in `TargetLang`; Assign a generic Category in `TargetLang`.
     *   Constraint: Return strict JSON array.
 *   **Output**: Hydrated `NewsItem` objects used in the UI.
 
@@ -33,6 +34,7 @@ Before AI processing, the system performs "Federated Fetching":
 *   **Input**: Arrays of `[Category] Title` for Liked and Disliked items.
 *   **Prompt Logic**:
     *   **Role**: "Chief Intelligence Officer & Cognitive Architect".
+    *   **Language Instruction**: "Output all content in `TargetLang`."
     *   **Analysis Dimensions**:
         1.  **Granularity**: Distinguish specific sub-fields (e.g., "AI Engineering" vs "AI Hype").
         2.  **Conflict Resolution**: How to handle articles with mixed signals.
@@ -52,7 +54,7 @@ Before AI processing, the system performs "Federated Fetching":
 *   **Prompt Logic**:
     *   **Task**: "Review the following news items based STRICTLY on the system instruction."
     *   **Requirement**: Return a JSON list of *only* the items that pass.
-    *   **Explanation**: For each passed item, provide a `passReason` referencing the specific gate hit.
+    *   **Explanation**: For each passed item, provide a `passReason` referencing the specific gate hit, written in `TargetLang`.
 *   **Output**: A list of `FilteredNewsItem` displayed in the "Smart Reader" view.
 
 ## 5. Error Handling & Robustness

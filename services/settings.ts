@@ -16,6 +16,7 @@ export const getSettings = (): Settings => {
   
   try {
     const parsed = JSON.parse(saved);
+    // Merge with default settings to ensure new fields (like language) exist if loading old config
     return { ...DEFAULT_SETTINGS, ...parsed };
   } catch {
     return DEFAULT_SETTINGS;
